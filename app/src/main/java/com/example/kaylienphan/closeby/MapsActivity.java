@@ -1,12 +1,19 @@
 package com.example.kaylienphan.closeby;
 
+import android.Manifest;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -21,9 +28,26 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+
+   // private
+   private FusedLocationProviderClient mFusedLocationClient;
+    private int locationRequestCode = 1000;
+
+    private double wayLatitude = 0.0, wayLongitude = 0.0;
+//    private LocationRequest locationRequest;
+//    private LocationCallback locationCallback;
+//    private android.widget.Button btnLocation;
+//    private TextView txtLocation;
+//    private android.widget.Button btnContinueLocation;
+//    private TextView txtContinueLocation;
+//    private StringBuilder stringBuilder;
+
+    private boolean isContinue = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +57,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        // Will be used to retrieve the last known location of the user
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         //TODO: Decide if you really want to set the Location Request right here. Will it run onPause()?
         LocationRequest mLocationRequestHighAccuracy = new LocationRequest();
@@ -57,6 +84,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d("response var", response.toString());
 
                     Log.d("we in this one", "5");
+
+
                 } catch (ApiException exception) {
                     switch (exception.getStatusCode()) {
                         case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
@@ -68,7 +97,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 // Show the dialog by calling startResolutionForResult(),
                                 // and check the result in onActivityResult().
                                 resolvable.startResolutionForResult(
-                                        MapsActivity.this, 1);
+                                        MapsActivity.this, locationRequestCode);
                                 Log.d("we in this one", "1");
                             } catch (IntentSender.SendIntentException e) {
                                 // Ignore the error.
@@ -90,15 +119,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-//        LocationSettingsResponse response = result.getResult();
-//
-//        try {
-//            Log.d("Is location usable", response.getLocationSettingsStates().isLocationUsable()+"");
-//        } catch (NullPointerException n) {
-//            Log.d("Is location usable", "Null pointer, no it isn't");
-//        }
-
-        //Log.d("LocationSettingsSuccess", result.isSuccessful()+"");
     }
 
 
@@ -120,4 +140,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
+
+    /**
+    private void getLocation() {
+        if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    locationRequestCode);
+
+        } else {
+            if (isContinue) {
+                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            } else {
+                mFusedLocationClient.getLastLocation().addOnSuccessListener(MapsActivity.this, location -> {
+                    if (location != null) {
+                        wayLatitude = location.getLatitude();
+                        wayLongitude = location.getLongitude();
+                        txtLocation.setText(String.format(Locale.US, "%s - %s", wayLatitude, wayLongitude));
+                    } else {
+                        mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+                    }
+                });
+            }
+        }
+    }**/
 }
